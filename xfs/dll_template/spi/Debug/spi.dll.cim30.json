@@ -1,0 +1,9 @@
+{
+    "DEVICE": "SCN83",
+    "VERSION" : "3.10",
+    "PORT": "COM2",
+    "RATE": "9600",
+    "RETAINBIN": "0",
+    "RETAINBINMAX": "10",
+    "RETAINBINTRESHOLD": "8"
+}

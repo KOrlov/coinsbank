@@ -1,0 +1,16 @@
+LIBRARY "SPI"
+DESCRIPTION "SPI"
+
+EXPORTS
+   WFPCancelAsyncRequest
+   WFPClose
+   WFPDeregister
+   WFPExecute
+   WFPGetInfo
+   WFPLock
+   WFPOpen
+   WFPRegister
+   WFPSetTraceLevel
+   WFPUnloadService
+   WFPUnlock
+

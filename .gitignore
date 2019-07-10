@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+*.db
+*.opendb
+*.ipch
+*.lnk
+xfs/dll_template/spi/.vs/spi/v15/Solution.VC.db-shm
+xfs/dll_template/spi/.vs/spi/v15/Solution.VC.db-wal
+*.log
+*.tlog
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.enc

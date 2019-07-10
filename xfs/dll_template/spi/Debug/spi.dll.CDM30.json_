@@ -1,0 +1,17 @@
+{
+    "DEVICE": "CDM4000",
+    "VERSION": "3.10",
+    "PORT": "COM4",
+    "RATE": "9600",
+    "units": "D,D,D,D,R",
+    "unitid": "00001,00002,00003,00004,00005",
+    "unitvalues": "0,0,0,0,0",
+    "unitinitialcount": "10,0,0,0,0",
+    "unitcount": "0,0,0,0,0",
+    "unitrejected": "0,0,0,0,0",
+    "unitminimum": "0,0,0,0,0",
+    "unitmaximum": "0,0,0,0,0",
+    "unitdispensed": "0,10,0,0,0",
+    "unitpresented": "0,0,0,0,0",
+    "unitretracted": "0,0,0,0,0"
+}
