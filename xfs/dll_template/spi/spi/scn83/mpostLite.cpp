@@ -63,15 +63,15 @@ std::vector<char> MpostLite::makeCommmand(std::vector<char> &payload)
 std::vector<char> MpostLite::sendCommand(std::vector<char> &payloadIn)
 {
 	AutoLock locl(&sendCmdCs);
-	Xfs::getInstance()->l.slog("Payload:", payloadIn.data(), payloadIn.size());
+	Xfs::getInstance()->l.debug_dev("Payload:", payloadIn.data(), payloadIn.size());
 
 	auto cmd = makeCommmand(payloadIn);
 
-	Xfs::getInstance()->l.slog("Sending command:", cmd.data(), cmd.size());
+	Xfs::getInstance()->l.debug_dev("Sending command:", cmd.data(), cmd.size());
 
 	int  sr = this->port->write_some(boost::asio::buffer(cmd, cmd.size()));
 
-	Xfs::getInstance()->l.slog("Sent bytes:"+std::to_string(sr));
+	Xfs::getInstance()->l.debug_dev("Sent bytes:"+std::to_string(sr));
 
 	char resp[255];
 
@@ -94,7 +94,7 @@ std::vector<char> MpostLite::sendCommand(std::vector<char> &payloadIn)
 		r += this->port->read_some(boost::asio::buffer(&resp[r], 255 - r));
 	
 	   
-	Xfs::getInstance()->l.slog("Response received:", resp, r);
+	Xfs::getInstance()->l.debug_dev("Response received:", resp, r);
 
 
 	std::vector<char> payload;
@@ -104,17 +104,17 @@ std::vector<char> MpostLite::sendCommand(std::vector<char> &payloadIn)
 		payload.push_back(resp[i]);
 
 	
-	Xfs::getInstance()->l.slog("Payload:", payload.data(), payload.size());
+	Xfs::getInstance()->l.debug_dev("Payload:", payload.data(), payload.size());
 	
 
-	Xfs::getInstance()->l.slog("Checksum resp:"+ std::to_string(checkSum(resp)));
+	Xfs::getInstance()->l.debug_dev("Checksum resp:"+ std::to_string(checkSum(resp)));
 	
 	if (checkSum(resp) != resp[resp[1] - 1])
 	{
-		Xfs::getInstance()->l.slog("Wrong checksum" );
+		Xfs::getInstance()->l.debug_dev("Wrong checksum" );
 	}
 	else
-		Xfs::getInstance()->l.slog("Checksum ok");   
+		Xfs::getInstance()->l.debug_dev("Checksum ok");   
 
 	return payload;
 }
@@ -122,7 +122,7 @@ std::vector<char> MpostLite::sendCommand(std::vector<char> &payloadIn)
 //todo: make it 
 bool MpostLite::isAcked(char* reply)
 {
-	Xfs::getInstance()->l.slog("Checking ACK for command");
+	Xfs::getInstance()->l.debug_dev("Checking ACK for command");
 
 
 	if ((reply[2] & 0x01) == ackToggleBit)
@@ -149,7 +149,7 @@ bool MpostLite::isAcked(char* reply)
 
 void MpostLite::statusChanged()
 {
-	Xfs::getInstance()->l.slog("Device status changed, executing signal");
+	Xfs::getInstance()->l.debug_dev("Device status changed, executing signal");
 	changed();
 }
 
@@ -157,15 +157,15 @@ void MpostLite::statusChanged()
 
 void MpostLite::setExtendedPollResults(char *r)
 {
-	Xfs::getInstance()->l.slog("setExtendedPollResults called");
+	Xfs::getInstance()->l.debug_dev("setExtendedPollResults called");
 	if (r[1]== 0x02)
 	{
-		Xfs::getInstance()->l.slog("subtype = 0x02");
+		Xfs::getInstance()->l.debug_dev("subtype = 0x02");
 		if (!bankNoteInEscrow.isPresent)
 		{
 			statusChanged();
 		}
-		Xfs::getInstance()->l.slog("bankNoteInEscrow.isPresent = true");
+		Xfs::getInstance()->l.debug_dev("bankNoteInEscrow.isPresent = true");
 
 		bankNoteInEscrow.isPresent = true;
 		int idx = 8;
@@ -303,7 +303,7 @@ bool MpostLite::setPollResults(char *data)
 	}
 
 	if(ch)
-		Xfs::getInstance()->l.slog("Device state:" + printStr);
+		Xfs::getInstance()->l.debug_dev("Device state:" + printStr);
 
 
 	printStr = "";
@@ -377,7 +377,7 @@ bool MpostLite::setPollResults(char *data)
 		this->calibration = false;
 	}
 	if (ch)
-		Xfs::getInstance()->l.slog("Device status:" + printStr);
+		Xfs::getInstance()->l.debug_dev("Device status:" + printStr);
 
 
 	printStr = "";
@@ -510,15 +510,15 @@ bool MpostLite::setPollResults(char *data)
 		this->disabled = false;
 	}
 	if (ch)
-		Xfs::getInstance()->l.slog("Misc state:" + printStr);
+		Xfs::getInstance()->l.debug_dev("Misc state:" + printStr);
 
 	if (ch)
 	{
 		printStr = "";
 		if (model &(char)Model::SCAdvance83)printStr = "SCAdvance83";
-		Xfs::getInstance()->l.slog("Model:" + printStr);
+		Xfs::getInstance()->l.debug_dev("Model:" + printStr);
 
-		Xfs::getInstance()->l.slog("SW Version:" + std::to_string(version));
+		Xfs::getInstance()->l.debug_dev("SW Version:" + std::to_string(version));
 	}
 	return ch;
 
@@ -536,8 +536,8 @@ void MpostLite::poll()
 	auto b = setPollResults(r.data());
 	//if (b)
 	{
-		Xfs::getInstance()->l.slog("Sending poll command:",c.data(),c.size());
-		Xfs::getInstance()->l.slog("poll data______:", r.data(), r.size());
+		Xfs::getInstance()->l.debug_dev("Sending poll command:",c.data(),c.size());
+		Xfs::getInstance()->l.debug_dev("poll data______:", r.data(), r.size());
 	}
 	return;
 }
@@ -549,7 +549,7 @@ bool MpostLite::connected()
 }
 void MpostLite::configureNoteTypes(std::vector<int> enabledNotes)
 {
-	Xfs::getInstance()->l.slog("configureNoteTypes");
+	Xfs::getInstance()->l.debug_dev("configureNoteTypes");
 
 
 	char notesEnabled1 = 0x0;
@@ -586,10 +586,10 @@ void MpostLite::configureNoteTypes(std::vector<int> enabledNotes)
 
 void  MpostLite::accept()
 {
-	Xfs::getInstance()->l.slog("Enable accepting:");
+	Xfs::getInstance()->l.debug_dev("Enable accepting:");
 
 	
-	Xfs::getInstance()->l.slog("cmd1:" + std::to_string(cmd1.load()));
+	Xfs::getInstance()->l.debug_dev("cmd1:" + std::to_string(cmd1.load()));
 
 
 	cmd1 = 0x7f; //all types	
@@ -599,7 +599,7 @@ void  MpostLite::accept()
 
 void  MpostLite::stack()
 {
-	Xfs::getInstance()->l.slog("stack:");
+	Xfs::getInstance()->l.debug_dev("stack:");
 
 	cmd1 = 0x7f; //all types	
 	cmd2 = 0x00 | OmnibusOpMode1::OrientationControlAw | OmnibusOpMode1::EscrowMode | OmnibusOpMode1::Stack;
@@ -608,7 +608,7 @@ void  MpostLite::stack()
 
 void  MpostLite::rollback()
 {
-	Xfs::getInstance()->l.slog("return:");
+	Xfs::getInstance()->l.debug_dev("return:");
 
 	cmd1 = 0x7f; //all types	
 	cmd2 = 0x00 | OmnibusOpMode1::OrientationControlAw | OmnibusOpMode1::EscrowMode | OmnibusOpMode1::Return;
@@ -617,33 +617,33 @@ void  MpostLite::rollback()
 
 void MpostLite::reset()
 {
-	Xfs::getInstance()->l.slog("reset:");
-	Xfs::getInstance()->l.slog("stopig poll");
+	Xfs::getInstance()->l.debug_dev("reset:");
+	Xfs::getInstance()->l.debug_dev("stopig poll");
 
 	stopPoll();
 	
 	AutoLock locl(&sendCmdCs);
 
-	Xfs::getInstance()->l.slog("Sending reset command:");
+	Xfs::getInstance()->l.debug_dev("Sending reset command:");
 	std::vector<char>c = { 0x60, 0x7F, 0x7F, 0x7F };
 
 
-	Xfs::getInstance()->l.slog("Payload:", c.data(), c.size());
+	Xfs::getInstance()->l.debug_dev("Payload:", c.data(), c.size());
 
 	auto cmd = makeCommmand(c);
 
-	Xfs::getInstance()->l.slog("Sending command:", cmd.data(), cmd.size());
+	Xfs::getInstance()->l.debug_dev("Sending command:", cmd.data(), cmd.size());
 
 	int  sr = this->port->write_some(boost::asio::buffer(cmd, cmd.size()));
 
-	Xfs::getInstance()->l.slog("Sent bytes:" + std::to_string(sr));
+	Xfs::getInstance()->l.debug_dev("Sent bytes:" + std::to_string(sr));
 	
 
 	Sleep(11000);
 
 	
 	
-	Xfs::getInstance()->l.slog("starting poll");
+	Xfs::getInstance()->l.debug_dev("starting poll");
 
 	
 
@@ -652,7 +652,7 @@ void MpostLite::reset()
 
 void  MpostLite::disableAccept()
 {
-	Xfs::getInstance()->l.slog("Disable accepting:");
+	Xfs::getInstance()->l.debug_dev("Disable accepting:");
 
 	cmd1 = 0x00; //all types
 	cmd2 = 0x00;	
@@ -663,31 +663,31 @@ void  MpostLite::disableAccept()
 
 void MpostLite::querySoftwareCRC()
 {
-	Xfs::getInstance()->l.slog("Sending querySoftwareCRC command:");
+	Xfs::getInstance()->l.debug_dev("Sending querySoftwareCRC command:");
 	std::vector<char>c = { 0x60, 0x00, 0x00, 0x00 };
 	auto r = sendCommand(c);
 
-	Xfs::getInstance()->l.slog("querySoftwareCRC data______:", r.data(), r.size());
+	Xfs::getInstance()->l.debug_dev("querySoftwareCRC data______:", r.data(), r.size());
 	return;
 }
 
 void MpostLite::queryCashBoxTotal()
 {
-	Xfs::getInstance()->l.slog("Sending queryCashBoxTotal command:");
+	Xfs::getInstance()->l.debug_dev("Sending queryCashBoxTotal command:");
 	std::vector<char>c = { 0x60, 0x00, 0x00, 0x01 };
 	auto r = sendCommand(c);
 
-	Xfs::getInstance()->l.slog("queryCashBoxTotal data______:", r.data(), r.size());
+	Xfs::getInstance()->l.debug_dev("queryCashBoxTotal data______:", r.data(), r.size());
 	return;
 }
 
 void MpostLite::queryVariantComponentName()
 {
-	Xfs::getInstance()->l.slog("Sending queryVariantComponentName command:");
+	Xfs::getInstance()->l.debug_dev("Sending queryVariantComponentName command:");
 	std::vector<char>c = { 0x60, 0x00, 0x00, CmdAuxQueryAcceptorVariantName};
 	auto r = sendCommand(c);
 
-	Xfs::getInstance()->l.slog("queryVariantComponentName data______:", r.data(), r.size());
+	Xfs::getInstance()->l.debug_dev("queryVariantComponentName data______:", r.data(), r.size());
 
 	int i = 1;
 	char cr[3];
@@ -699,7 +699,7 @@ void MpostLite::queryVariantComponentName()
 	}
 	currencies.push_back(cr);
 	for(auto ck:currencies)
-		Xfs::getInstance()->l.slog("currency:"+std::string(ck));
+		Xfs::getInstance()->l.debug_dev("currency:"+std::string(ck));
 	
 	
 	return;
@@ -707,19 +707,19 @@ void MpostLite::queryVariantComponentName()
 
 void MpostLite::clearCashBoxTotal()
 {
-	Xfs::getInstance()->l.slog("Sending clearCashBoxTotal command:");
+	Xfs::getInstance()->l.debug_dev("Sending clearCashBoxTotal command:");
 	std::vector<char>c = { 0x60, 0x00, 0x00, CmdAuxClearCashBoxTotal };
 	auto r = sendCommand(c);
 
-	Xfs::getInstance()->l.slog("clearCashBoxTotal data______:", r.data(), r.size());
+	Xfs::getInstance()->l.debug_dev("clearCashBoxTotal data______:", r.data(), r.size());
 }
 
 void MpostLite::queryValueTable()
 {
-	Xfs::getInstance()->l.slog("Sending queryValueTable command:");
+	Xfs::getInstance()->l.debug_dev("Sending queryValueTable command:");
 	std::vector<char>c = { 0x70, 0x06, 0x00, 0x00,0x00 };
 	auto r = sendCommand(c);
-	Xfs::getInstance()->l.slog("queryValueTable data______:", r.data(), r.size());
+	Xfs::getInstance()->l.debug_dev("queryValueTable data______:", r.data(), r.size());
 	for (int i = 0; i < 7; i++)
 	{
 		int  idx = 8 + i * 10;
@@ -753,7 +753,7 @@ void MpostLite::queryValueTable()
 	
 	for (auto n : noteTypes)
 	{
-		Xfs::getInstance()->l.slog("note type:"+std::to_string(n.index) + ", iso="+n.iso[0]+ n.iso[1]+ n.iso[2]+", base value="+std::to_string(n.base)+ ", exp="+std::to_string(n.exp));
+		Xfs::getInstance()->l.debug_dev("note type:"+std::to_string(n.index) + ", iso="+n.iso[0]+ n.iso[1]+ n.iso[2]+", base value="+std::to_string(n.base)+ ", exp="+std::to_string(n.exp));
 	}
 	
 }

@@ -5,7 +5,7 @@
 AutoPort::AutoPort(std::string p, int baud)
 {	
 
-	Xfs::getInstance()->l.slog("Opening port");
+	Xfs::getInstance()->l.debug_dev("Opening port");
 	   
 	int rate = 4;
 	if (baud == 1200)rate = 1;
@@ -21,12 +21,12 @@ AutoPort::AutoPort(std::string p, int baud)
 	if (!port)
 	{
 		GetErrCode(&ec);
-		Xfs::getInstance()->l.slog("Something went wrong...ec=" + std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("Something went wrong...ec=" + std::to_string(ec));
 
 	}
 	else
 	{
-		Xfs::getInstance()->l.slog("Port opened");
+		Xfs::getInstance()->l.debug_dev("Port opened");
 	}
 
 }

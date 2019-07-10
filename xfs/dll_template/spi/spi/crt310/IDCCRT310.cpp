@@ -296,18 +296,18 @@ void IDCCRT310::copyLpInput(LPVOID lpData, REQUESTID reqId)
 		}
 		if (requests[reqId]->cmd == WFS_CMD_IDC_READ_RAW_DATA)
 		{
-			Xfs::getInstance()->l.slog("copyLpInput WFS_CMD_IDC_READ_RAW_DATA");
+			Xfs::getInstance()->l.debug_dev("copyLpInput WFS_CMD_IDC_READ_RAW_DATA");
 			LPWORD lpwReadDatas = (LPWORD)lpData;
 					
 			memAlloc->AllocateBuffer(sizeof(WORD), (void **)&requests[reqId]->lpParam);
 			LPWORD lpwReadDatad = (LPWORD)requests[reqId]->lpParam;
 			*lpwReadDatad = *lpwReadDatas;
-			Xfs::getInstance()->l.slog("LPWORD created");
+			Xfs::getInstance()->l.debug_dev("LPWORD created");
 
 		}
 		if (requests[reqId]->cmd == WFS_CMD_IDC_CHIP_IO)
 		{
-			Xfs::getInstance()->l.slog("copyLpInput WFS_CMD_IDC_CHIP_IO");
+			Xfs::getInstance()->l.debug_dev("copyLpInput WFS_CMD_IDC_CHIP_IO");
 
 			LPWFSIDCCHIPIO lpChipIoIns = (LPWFSIDCCHIPIO)lpData;
 			memAlloc->AllocateBuffer(sizeof(WFSIDCCHIPIO), (void **)&requests[reqId]->lpParam);
@@ -317,7 +317,7 @@ void IDCCRT310::copyLpInput(LPVOID lpData, REQUESTID reqId)
 			lpChipIoInd->ulChipDataLength = lpChipIoIns->ulChipDataLength;
 			lpChipIoInd->wChipProtocol = lpChipIoIns->wChipProtocol;
 			memcpy_s(lpChipIoInd->lpbChipData, lpChipIoInd->ulChipDataLength, lpChipIoIns->lpbChipData, lpChipIoIns->ulChipDataLength);			
-			Xfs::getInstance()->l.slog("LPWFSIDCCHIPIO created");
+			Xfs::getInstance()->l.debug_dev("LPWFSIDCCHIPIO created");
 
 		}
 		if (requests[reqId]->cmd == WFS_CMD_IDC_RESET)
@@ -635,11 +635,11 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 {
 	LPWORD lpwReadData = (LPWORD)requests[reqId]->lpParam;
 	
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_READ_RAW_DATA reqId=" + std::to_string(reqId) + ", lpwReadData=" + std::to_string(*lpwReadData));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_READ_RAW_DATA reqId=" + std::to_string(reqId) + ", lpwReadData=" + std::to_string(*lpwReadData));
 	
 	
-	Xfs::getInstance()->l.slog("(*lpwReadData)&WFS_IDC_TRACK1" + std::to_string((*lpwReadData)&WFS_IDC_TRACK1));
-	Xfs::getInstance()->l.slog("(*lpwReadData)&WFS_IDC_TRACK2" + std::to_string((*lpwReadData)&WFS_IDC_TRACK2));
+	Xfs::getInstance()->l.debug_dev("(*lpwReadData)&WFS_IDC_TRACK1" + std::to_string((*lpwReadData)&WFS_IDC_TRACK1));
+	Xfs::getInstance()->l.debug_dev("(*lpwReadData)&WFS_IDC_TRACK2" + std::to_string((*lpwReadData)&WFS_IDC_TRACK2));
 
 
 	AutoPort port(this->port, this->baudRate);
@@ -659,7 +659,7 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 
 	if (status.fwDevice != WFS_IDC_DEVONLINE)
 	{
-		Xfs::getInstance()->l.slog("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
+		Xfs::getInstance()->l.debug_dev("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
 
 		if (status.fwDevice == WFS_IDC_DEVBUSY)
 		{
@@ -674,7 +674,7 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 
 	if (status.fwMedia == WFS_IDC_MEDIAJAMMED)
 	{
-		Xfs::getInstance()->l.slog("Media jammed, ...");
+		Xfs::getInstance()->l.debug_dev("Media jammed, ...");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_MEDIAJAM;
 		return;
 	}
@@ -682,7 +682,7 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 
 	if (status.fwMedia == WFS_IDC_MEDIANOTPRESENT)
 	{
-		Xfs::getInstance()->l.slog("Media not present, enabling card-in");
+		Xfs::getInstance()->l.debug_dev("Media not present, enabling card-in");
 
 		int ec = CRT310_CardSetting(port.port, 0x4, 0x1);
 		if (ec != 0)
@@ -710,16 +710,16 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 	if (requests[reqId]->isCancelled)
 	{
 		requests[reqId]->pResult->hResult = WFS_ERR_CANCELED;
-		Xfs::getInstance()->l.slog("cancelled");
+		Xfs::getInstance()->l.debug_dev("cancelled");
 
 
-		Xfs::getInstance()->l.slog("Disabling card-in");
+		Xfs::getInstance()->l.debug_dev("Disabling card-in");
 
 		int ec = CRT310_CardSetting(port.port, 0x1, 0x1);
 		if (ec != 0)
 		{
 			GetErrCode(&ec);
-			Xfs::getInstance()->l.slog("Error disabling card-in:" + std::to_string(ec));
+			Xfs::getInstance()->l.debug_dev("Error disabling card-in:" + std::to_string(ec));
 
 			checkEc(ec);
 			requests[reqId]->pResult->hResult = this->hResult;
@@ -735,7 +735,7 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 
 	if (status.fwMedia == WFS_IDC_MEDIAJAMMED)
 	{
-		Xfs::getInstance()->l.slog("Media jammed, ...");
+		Xfs::getInstance()->l.debug_dev("Media jammed, ...");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_MEDIAJAM;
 		return;
 	}
@@ -790,24 +790,24 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 	unsigned char data2[255];
 	int len3 = 0;
 	unsigned char data3[255];
-	Xfs::getInstance()->l.slog("MC_ReadTracks track cmd=" + std::to_string(track));
+	Xfs::getInstance()->l.debug_dev("MC_ReadTracks track cmd=" + std::to_string(track));
 
 
 	if (track)
 	{
-
+		
 		int ec = MC_ReadTrack(port.port, 0x30, track, &len, data);
 
-		Xfs::getInstance()->l.slog("MC_ReadTracks ec=" + std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("MC_ReadTracks ec=" + std::to_string(ec));
 		if (ec != 0)
 		{
 			GetErrCode(&ec);
-			Xfs::getInstance()->l.slog("Error reading tracks:" + std::to_string(ec));
+			Xfs::getInstance()->l.debug_dev("Error reading tracks:" + std::to_string(ec));
 			checkEc(ec);
 			requests[reqId]->pResult->hResult = this->hResult;
 			return;
 		}
-		Xfs::getInstance()->l.slog("Read tracks =", data, len);
+		Xfs::getInstance()->l.debug_dev("Read tracks =", data, len);
 
 
 
@@ -820,7 +820,7 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 			len1++;
 			p++;
 		} while (*p != 0x1f);
-		Xfs::getInstance()->l.slog("Track 1 length=" + std::to_string(len1));
+		Xfs::getInstance()->l.debug_dev("Track 1 length=" + std::to_string(len1));
 		
 			
 		do
@@ -829,14 +829,14 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 		    len2++;
 			p++;
 		} while (*p != 0x1f);
-		Xfs::getInstance()->l.slog("Track 2 length=" + std::to_string(len2));
+		Xfs::getInstance()->l.debug_dev("Track 2 length=" + std::to_string(len2));
 		
 		
 		len3 = len - len1 - len2;
 		for (int i = 0; i < len3; i++, p++)		
 			data3[i] = *p;
 		
-		Xfs::getInstance()->l.slog("Track 3 length=" + std::to_string(len3));
+		Xfs::getInstance()->l.debug_dev("Track 3 length=" + std::to_string(len3));
 
 
 	}
@@ -852,39 +852,39 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 		if(!ec)
 		{ 
 			ec = CPU_WarmReset(port.port, &cpuType, dataAtr, &lenAtr);
-			Xfs::getInstance()->l.slog("Warm reset =" + std::to_string(ec));
-			Xfs::getInstance()->l.slog("CPU_WarmReset ec=" + std::to_string(ec));
-			Xfs::getInstance()->l.slog("CPU_WarmReset", dataAtr, lenAtr);
+			Xfs::getInstance()->l.debug_dev("Warm reset =" + std::to_string(ec));
+			Xfs::getInstance()->l.debug_dev("CPU_WarmReset ec=" + std::to_string(ec));
+			Xfs::getInstance()->l.debug_dev("CPU_WarmReset", dataAtr, lenAtr);
 
 			if (ec)
 			{
 				if (ec == 0x4e)//Unsuccessful
 				{
-					Xfs::getInstance()->l.slog("Unsuccessful");
+					Xfs::getInstance()->l.debug_dev("Unsuccessful");
 					wStatusAtr = WFS_IDC_DATASRCMISSING;
 
 				}
 				if (ec == 0x45) //No card in the reader
 				{
-					Xfs::getInstance()->l.slog("No card in the reader");
+					Xfs::getInstance()->l.debug_dev("No card in the reader");
 					wStatusAtr = WFS_IDC_DATASRCMISSING;
 				}
 				if (ec == 0x57) //Card is no on the right position
 				{
-					Xfs::getInstance()->l.slog("Card is no on the right position");
+					Xfs::getInstance()->l.debug_dev("Card is no on the right position");
 					wStatusAtr = WFS_IDC_DATASRCMISSING;
 
 				}
 			}
 			if (!lenAtr)
 			{
-				Xfs::getInstance()->l.slog("Data Length=0");
+				Xfs::getInstance()->l.debug_dev("Data Length=0");
 				wStatusAtr = WFS_IDC_DATAMISSING;
 			}
 		}
 		else
 		{
-			Xfs::getInstance()->l.slog("Unsuccessful");
+			Xfs::getInstance()->l.debug_dev("Unsuccessful");
 			wStatusAtr = WFS_IDC_DATASRCMISSING;
 		}		
 	}
@@ -905,14 +905,14 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 	int c = 0;
 	if ((*lpwReadData)&WFS_IDC_TRACK1)
 	{
-		Xfs::getInstance()->l.slog("Track 1 data",data1,len1);
+		Xfs::getInstance()->l.debug_dev("Track 1 data",data1,len1);
 
 		lppCardData[c]->ulDataLength = 0;
 		
 		if (data1[1] == 0X59) {// read data correclty
 			lppCardData[c]->wStatus = WFS_IDC_DATAOK;
 			lppCardData[c]->ulDataLength = len1 - 2;
-			Xfs::getInstance()->l.slog("Track 1 data read correctly");
+			Xfs::getInstance()->l.debug_dev("Track 1 data read correctly");
 
 		} 
 		else
@@ -936,14 +936,14 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 	}
 	if ((*lpwReadData)&WFS_IDC_TRACK2)
 	{
-		Xfs::getInstance()->l.slog("Track 2 data", data2, len2);
+		Xfs::getInstance()->l.debug_dev("Track 2 data", data2, len2);
 		lppCardData[c]->ulDataLength = 0;
 		lppCardData[c]->wDataSource = WFS_IDC_TRACK2;
 		
 		if (data2[1] == 0X59) {// read data correclty
 			lppCardData[c]->wStatus = WFS_IDC_DATAOK;
 			lppCardData[c]->ulDataLength = len2 - 2;
-			Xfs::getInstance()->l.slog("Track 2 data read correctly");
+			Xfs::getInstance()->l.debug_dev("Track 2 data read correctly");
 
 		}
 		else
@@ -970,14 +970,14 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 	
 	if ((*lpwReadData)&WFS_IDC_TRACK3)
 	{
-		Xfs::getInstance()->l.slog("Track 3 data", data3, len3);
+		Xfs::getInstance()->l.debug_dev("Track 3 data", data3, len3);
 		lppCardData[c]->ulDataLength = 0;
 		lppCardData[c]->wDataSource = WFS_IDC_TRACK3;
 
 		if (data3[1] == 0X59) {// read data correclty
 			lppCardData[c]->wStatus = WFS_IDC_DATAOK;
 			lppCardData[c]->ulDataLength = len3 - 2;
-			Xfs::getInstance()->l.slog("Track 3 data read correctly");
+			Xfs::getInstance()->l.debug_dev("Track 3 data read correctly");
 
 		}
 		else
@@ -1030,7 +1030,7 @@ void IDCCRT310::execWFS_CMD_IDC_READ_RAW_DATA(REQUESTID reqId)
 
 void IDCCRT310::execWFS_CMD_IDC_CHIP_POWER(REQUESTID reqId)
 {	
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_CHIP_POWER reqId=" + std::to_string(reqId));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_CHIP_POWER reqId=" + std::to_string(reqId));
 
 	LPWORD lpwChipPower;
 
@@ -1052,13 +1052,13 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_POWER(REQUESTID reqId)
 	if (status.fwMedia == WFS_IDC_MEDIAJAMMED)
 	{
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_MEDIAJAM;
-		Xfs::getInstance()->l.slog("Unsuccessful = WFS_ERR_IDC_MEDIAJAM");
+		Xfs::getInstance()->l.debug_dev("Unsuccessful = WFS_ERR_IDC_MEDIAJAM");
 		return;
 	}
 	if (status.fwMedia != WFS_IDC_MEDIAPRESENT)
 	{
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;	
-		Xfs::getInstance()->l.slog("Unsuccessful = WFS_ERR_IDC_NOMEDIA");
+		Xfs::getInstance()->l.debug_dev("Unsuccessful = WFS_ERR_IDC_NOMEDIA");
 
 		return;
 	}
@@ -1081,23 +1081,23 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_POWER(REQUESTID reqId)
 	
 	if (ec)
 	{
-		Xfs::getInstance()->l.slog("Error happened ec=" + std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("Error happened ec=" + std::to_string(ec));
 
 
 		if (ec == 0x4e)//Unsuccessful
 		{
-			Xfs::getInstance()->l.slog("Unsuccessful");
+			Xfs::getInstance()->l.debug_dev("Unsuccessful");
 			requests[reqId]->pResult->hResult = WFS_ERR_IDC_ATRNOTOBTAINED;
 
 		}
 		if (ec == 0x45) //No card in the reader
 		{
-			Xfs::getInstance()->l.slog("No card in the reader");			
+			Xfs::getInstance()->l.debug_dev("No card in the reader");			
 			requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;
 		}
 		if (ec == 0x57) //Card is no on the right position
 		{
-			Xfs::getInstance()->l.slog("Card is no on the right position");
+			Xfs::getInstance()->l.debug_dev("Card is no on the right position");
 			requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;
 			
 			return;
@@ -1105,12 +1105,12 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_POWER(REQUESTID reqId)
 	}
 	if (!len)
 	{		
-		Xfs::getInstance()->l.slog("Data Length=0");
+		Xfs::getInstance()->l.debug_dev("Data Length=0");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_INVALIDDATA;
 		return;
 	}
 
-	Xfs::getInstance()->l.slog("Looks like everything is ok, creatinf output result");
+	Xfs::getInstance()->l.debug_dev("Looks like everything is ok, creatinf output result");
 
 
 	LPWFSIDCCHIPPOWEROUT lpChipPowerOut;
@@ -1134,9 +1134,9 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_IO(REQUESTID reqId)
 	
 
 	lpChipIoIn = (LPWFSIDCCHIPIO)requests[reqId]->lpParam;
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_CHIP_IO reqId=" + std::to_string(reqId));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_CHIP_IO reqId=" + std::to_string(reqId));
 
-	Xfs::getInstance()->l.slog("lpChipIoIn", lpChipIoIn->lpbChipData, lpChipIoIn->ulChipDataLength);
+	Xfs::getInstance()->l.debug_dev("lpChipIoIn", lpChipIoIn->lpbChipData, lpChipIoIn->ulChipDataLength);
 
 	AutoPort port(this->port, this->baudRate);
 
@@ -1153,7 +1153,7 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_IO(REQUESTID reqId)
 
 	if (status.fwDevice != WFS_IDC_DEVONLINE)
 	{
-		Xfs::getInstance()->l.slog("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
+		Xfs::getInstance()->l.debug_dev("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
 
 		if (status.fwDevice == WFS_IDC_DEVBUSY)
 		{
@@ -1168,13 +1168,13 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_IO(REQUESTID reqId)
 
 	if (status.fwMedia == WFS_IDC_MEDIAJAMMED)
 	{
-		Xfs::getInstance()->l.slog("Media jammed, ...");
+		Xfs::getInstance()->l.debug_dev("Media jammed, ...");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_MEDIAJAM;
 		return;
 	}
 	if (status.fwMedia == WFS_IDC_MEDIANOTPRESENT)
 	{
-		Xfs::getInstance()->l.slog("Media not present, ...");
+		Xfs::getInstance()->l.debug_dev("Media not present, ...");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;
 		return;
 	}
@@ -1193,20 +1193,20 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_IO(REQUESTID reqId)
 	}
 	if (ec)
 	{
-		Xfs::getInstance()->l.slog("CAPU  sending returns an ERROR="+std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("CAPU  sending returns an ERROR="+std::to_string(ec));
 		if (ec == 0x4e){//Failure
 			
-			Xfs::getInstance()->l.slog("Failure");
+			Xfs::getInstance()->l.debug_dev("Failure");
 			requests[reqId]->pResult->hResult = WFS_ERR_IDC_INVALIDDATA;			
 			return;
 		} 
 		if (ec == 0x45){// No card in the reader
-			Xfs::getInstance()->l.slog("No card in the reader");
+			Xfs::getInstance()->l.debug_dev("No card in the reader");
 			requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;
 			return;
 		} 
 		if (ec == 0x57){// Card on un-operative position
-			Xfs::getInstance()->l.slog("Card on un-operative position");
+			Xfs::getInstance()->l.debug_dev("Card on un-operative position");
 
 			requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;
 			return;
@@ -1214,7 +1214,7 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_IO(REQUESTID reqId)
 	}
 	if (!len)
 	{
-		Xfs::getInstance()->l.slog("len=0, obviously something went wrong");
+		Xfs::getInstance()->l.debug_dev("len=0, obviously something went wrong");
 
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;
 		return;
@@ -1230,7 +1230,7 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_IO(REQUESTID reqId)
 	memcpy_s(lpChipIoOut->lpbChipData, lpChipIoOut->ulChipDataLength, data, len);
 	requests[reqId]->pResult->hResult = WFS_SUCCESS;
 
-	Xfs::getInstance()->l.slog("lpChipIoOut", lpChipIoOut->lpbChipData, lpChipIoOut->ulChipDataLength);
+	Xfs::getInstance()->l.debug_dev("lpChipIoOut", lpChipIoOut->lpbChipData, lpChipIoOut->ulChipDataLength);
 
 
 	return;
@@ -1240,7 +1240,7 @@ void IDCCRT310::execWFS_CMD_IDC_CHIP_IO(REQUESTID reqId)
 
 void IDCCRT310::execWFS_CMD_IDC_RETAIN_CARD(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_RETAIN_CARD reqId=" + std::to_string(reqId) );
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_RETAIN_CARD reqId=" + std::to_string(reqId) );
 
 	LPWFSIDCRETAINCARD lpRetainCard;
 	memAlloc->AllocateMore(sizeof(WFSIDCRETAINCARD), requests[reqId]->pResult, (void **)&lpRetainCard);
@@ -1265,7 +1265,7 @@ void IDCCRT310::execWFS_CMD_IDC_RETAIN_CARD(REQUESTID reqId)
 
 	if (status.fwDevice != WFS_IDC_DEVONLINE)
 	{
-		Xfs::getInstance()->l.slog("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
+		Xfs::getInstance()->l.debug_dev("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
 		if (status.fwDevice == WFS_IDC_DEVBUSY)
 		{
 			requests[reqId]->pResult->hResult = WFS_ERR_OP_IN_PROGRESS;
@@ -1280,7 +1280,7 @@ void IDCCRT310::execWFS_CMD_IDC_RETAIN_CARD(REQUESTID reqId)
 
 	if (status.fwMedia == WFS_IDC_MEDIANOTPRESENT)
 	{
-		Xfs::getInstance()->l.slog("Media not present, nothing to retain");
+		Xfs::getInstance()->l.debug_dev("Media not present, nothing to retain");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;			
 		return;
 	}
@@ -1289,7 +1289,7 @@ void IDCCRT310::execWFS_CMD_IDC_RETAIN_CARD(REQUESTID reqId)
 		if (status.usCards >= caps.usCards)
 		{
 			sendWFS_USRE_IDC_RETAINBINTHRESHOLD(requests[reqId]->hservice, WFS_IDC_RETAINBINFULL);
-			Xfs::getInstance()->l.slog("Mediapresent, but retain BIN is full");
+			Xfs::getInstance()->l.debug_dev("Mediapresent, but retain BIN is full");
 			requests[reqId]->pResult->hResult = WFS_ERR_IDC_RETAINBINFULL;
 			return;
 		}
@@ -1340,7 +1340,7 @@ void IDCCRT310::execWFS_CMD_IDC_RETAIN_CARD(REQUESTID reqId)
 
 void IDCCRT310::execWFS_CMD_IDC_EJECT_CARD(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_EJECT_CARD reqId=" + std::to_string(reqId));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_EJECT_CARD reqId=" + std::to_string(reqId));
 
 	LPWFSIDCEJECTCARD lpEjectCard;
 	
@@ -1369,7 +1369,7 @@ void IDCCRT310::execWFS_CMD_IDC_EJECT_CARD(REQUESTID reqId)
 
 	if (status.fwDevice != WFS_IDC_DEVONLINE)
 	{
-		Xfs::getInstance()->l.slog("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
+		Xfs::getInstance()->l.debug_dev("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
 		if (status.fwDevice == WFS_IDC_DEVBUSY)
 		{
 			requests[reqId]->pResult->hResult = WFS_ERR_OP_IN_PROGRESS;
@@ -1383,14 +1383,14 @@ void IDCCRT310::execWFS_CMD_IDC_EJECT_CARD(REQUESTID reqId)
 
 	if (status.fwMedia == WFS_IDC_MEDIAJAMMED)
 	{
-		Xfs::getInstance()->l.slog("Media jammed");
+		Xfs::getInstance()->l.debug_dev("Media jammed");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_MEDIAJAM;
 		return;
 	}
 	else
 	if (status.fwMedia == WFS_IDC_MEDIANOTPRESENT)
 	{
-		Xfs::getInstance()->l.slog("Media not present, nothing to eject");
+		Xfs::getInstance()->l.debug_dev("Media not present, nothing to eject");
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_NOMEDIA;
 		return;
 	}
@@ -1421,13 +1421,13 @@ void IDCCRT310::execWFS_CMD_IDC_EJECT_CARD(REQUESTID reqId)
 		Sleep(10);
 	}
 
-	Xfs::getInstance()->l.slog("Disabling card-in");
+	Xfs::getInstance()->l.debug_dev("Disabling card-in");
 
 	int ec = CRT310_CardSetting(port.port, 0x1, 0x1);
 	if (ec != 0)
 	{
 		GetErrCode(&ec);
-		Xfs::getInstance()->l.slog("Error disabling card-in:" + std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("Error disabling card-in:" + std::to_string(ec));
 
 		checkEc(ec);
 		requests[reqId]->pResult->hResult = this->hResult;
@@ -1453,7 +1453,7 @@ void IDCCRT310::execWFS_CMD_IDC_EJECT_CARD(REQUESTID reqId)
 
 void IDCCRT310::execWFS_CMD_IDC_RESET_COUNT(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_RESET_COUNT reqId=" + std::to_string(reqId));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_RESET_COUNT reqId=" + std::to_string(reqId));
 
 	requests[reqId]->pResult->hResult = WFS_SUCCESS;
 	
@@ -1464,7 +1464,7 @@ void IDCCRT310::execWFS_CMD_IDC_RESET_COUNT(REQUESTID reqId)
 
 void IDCCRT310::execWFS_CMD_IDC_RESET(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_RESET reqId=" + std::to_string(reqId));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_RESET reqId=" + std::to_string(reqId));
 	BYTE eject = 0;
 
 	LPWORD lpwResetIn;	
@@ -1495,7 +1495,7 @@ void IDCCRT310::execWFS_CMD_IDC_RESET(REQUESTID reqId)
 
 	updateCardStatus(port.port);
 
-	Xfs::getInstance()->l.slog("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
+	Xfs::getInstance()->l.debug_dev("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
 	if (status.fwDevice == WFS_IDC_DEVBUSY)
 	{
 		requests[reqId]->pResult->hResult = WFS_ERR_OP_IN_PROGRESS;
@@ -1571,7 +1571,7 @@ void IDCCRT310::execWFS_CMD_IDC_RESET(REQUESTID reqId)
 
 void IDCCRT310::execWFS_CMD_IDC_SET_GUIDANCE_LIGHT(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.slog("execWFS_CMD_IDC_SET_GUIDANCE_LIGHT reqId=" + std::to_string(reqId));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_IDC_SET_GUIDANCE_LIGHT reqId=" + std::to_string(reqId));
 
 	LPWFSIDCSETGUIDLIGHT lpSetGuidLight;
 
@@ -1581,30 +1581,30 @@ void IDCCRT310::execWFS_CMD_IDC_SET_GUIDANCE_LIGHT(REQUESTID reqId)
 
 	int on = 0;
 
-	Xfs::getInstance()->l.slog("Command received LIGHT = "+std::to_string(lpSetGuidLight->dwCommand));
+	Xfs::getInstance()->l.debug_dev("Command received LIGHT = "+std::to_string(lpSetGuidLight->dwCommand));
 
 	if (lpSetGuidLight->dwCommand == 640)
 	{
-		Xfs::getInstance()->l.slog("Command received LIGHT ON" );
+		Xfs::getInstance()->l.debug_dev("Command received LIGHT ON" );
 
 		on = 1;
 	}
 	else
 	{
-		Xfs::getInstance()->l.slog("Command received LIGHT OFF");
+		Xfs::getInstance()->l.debug_dev("Command received LIGHT OFF");
 		on = 0;
 	}
 
 
 	if (lpSetGuidLight->wGuidLight >= WFS_IDC_GUIDLIGHTS_SIZE)
 	{
-		Xfs::getInstance()->l.slog("Guidlight not avaialabe id=" + std::to_string(lpSetGuidLight->wGuidLight));
+		Xfs::getInstance()->l.debug_dev("Guidlight not avaialabe id=" + std::to_string(lpSetGuidLight->wGuidLight));
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_INVALID_PORT;
 		return;
 	}
 	if (this->caps.dwGuidLights[lpSetGuidLight->wGuidLight] == WFS_IDC_GUIDANCE_NOT_AVAILABLE)
 	{
-		Xfs::getInstance()->l.slog("Guidlight not avaialabe id=" + std::to_string(lpSetGuidLight->wGuidLight));
+		Xfs::getInstance()->l.debug_dev("Guidlight not avaialabe id=" + std::to_string(lpSetGuidLight->wGuidLight));
 		requests[reqId]->pResult->hResult = WFS_ERR_IDC_INVALID_PORT;
 		return;
 	}
@@ -1642,7 +1642,7 @@ void IDCCRT310::execWFS_CMD_IDC_SET_GUIDANCE_LIGHT(REQUESTID reqId)
 
 	updateCardStatus(port.port);
 
-	Xfs::getInstance()->l.slog("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
+	Xfs::getInstance()->l.debug_dev("Status.fwDevice != WFS_IDC_DEVONLINE, faDevice=" + std::to_string(status.fwDevice));
 	if (status.fwDevice == WFS_IDC_DEVBUSY)
 	{
 		requests[reqId]->pResult->hResult = WFS_ERR_OP_IN_PROGRESS;
@@ -1658,7 +1658,7 @@ void IDCCRT310::execWFS_CMD_IDC_SET_GUIDANCE_LIGHT(REQUESTID reqId)
 	if (ec != 0)
 	{
 		GetErrCode(&ec);
-		Xfs::getInstance()->l.slog("Error executing ledset=" + std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("Error executing ledset=" + std::to_string(ec));
 		checkEc(ec);
 		requests[reqId]->pResult->hResult = WFS_ERR_HARDWARE_ERROR;
 		return;
@@ -1700,14 +1700,14 @@ void IDCCRT310::execWFS_CMD_IDC_SET_GUIDANCE_LIGHT(REQUESTID reqId)
 	if (on)
 	{
 		onoff = 0;
-		Xfs::getInstance()->l.slog("SET LIHGT ON!!!!!");
+		Xfs::getInstance()->l.debug_dev("SET LIHGT ON!!!!!");
 		t1 = 0xff;
 		t2 = 0;
 	}
 	else
 	{
 		onoff = 1;
-		Xfs::getInstance()->l.slog("SET LIHGT OFFFFFFF!!!!!");
+		Xfs::getInstance()->l.debug_dev("SET LIHGT OFFFFFFF!!!!!");
 		t1 = 0;
 		t2 = 0;
 	}
@@ -1716,7 +1716,7 @@ void IDCCRT310::execWFS_CMD_IDC_SET_GUIDANCE_LIGHT(REQUESTID reqId)
 	if (ec != 0)
 	{
 		GetErrCode(&ec);
-		Xfs::getInstance()->l.slog("Error executing ledtime=" + std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("Error executing ledtime=" + std::to_string(ec));
 		checkEc(ec);
 		requests[reqId]->pResult->hResult = WFS_ERR_HARDWARE_ERROR;
 		return;
@@ -1733,41 +1733,41 @@ void IDCCRT310::checkEc(int ec)
 
 	if (ec == -2)// Card Type error
 	{
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec)+" (Card Type error)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec)+" (Card Type error)");
 	}
 	if (ec == - 101)// Serial port error == > Execute CommOpen or CommOpenWithBaut function to configure
 	{
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Serial port error == > Execute CommOpen or CommOpenWithBaut function to configure)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Serial port error == > Execute CommOpen or CommOpenWithBaut function to configure)");
 	}
 	if (ec == - 102)// Baud Rate setting error == > Execute CommOpenWithBaut to open serial port
 	{
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Execute CommOpenWithBaut to open serial port)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Execute CommOpenWithBaut to open serial port)");
 	}
 	if (ec == - 200)// 0 Undefined parameter
 	{
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Undefined parameter)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Undefined parameter)");
 	}
 	if (ec == - 202)// 1 Command out of model == > Check if command support by the model number
 	{
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Command out of model == > Check if command support by the model number)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Command out of model == > Check if command support by the model number)");
 	}
 	if (ec == - 204)// 2 Command out of order == > Wrong command
 	{
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Command out of order == > Wrong command)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Command out of order == > Wrong command)");
 	}
 	if (ec == - 205)// 3 Power error == > Check power outputDC12V
 	{
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Power error == > Check power outputDC12V)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Power error == > Check power outputDC12V)");
 	}
 	if (ec == - 206)// 4 Over - short or long card inside
 	{
 		this->status.fwDevice = WFS_IDC_DEVNODEVICE;
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Over - short or long card inside)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Over - short or long card inside)");
 	}
 	if (ec == - 207)// 5 Power off == > Check the power
 	{
 		this->status.fwDevice = WFS_IDC_DEVNODEVICE;
-		Xfs::getInstance()->l.slog("Error code=" + std::to_string(ec) + " (Power off == > Check the power)");
+		Xfs::getInstance()->l.debug_dev("Error code=" + std::to_string(ec) + " (Power off == > Check the power)");
 	}
 
 
@@ -1778,7 +1778,7 @@ void IDCCRT310::checkEc(int ec)
 void IDCCRT310::updateCardStatus(HANDLE port)
 {	
 	
-	Xfs::getInstance()->l.slog("Updating device status (card position/settings)");
+	Xfs::getInstance()->l.debug_dev("Updating device status (card position/settings)");
 	
 	//Card position
 
@@ -1789,7 +1789,7 @@ void IDCCRT310::updateCardStatus(HANDLE port)
 	int ec = CRT310_GetStatus(port, &atPosition, &frontSetting, &rearSetting);
 	if (ec)
 	{
-		Xfs::getInstance()->l.slog("Error, ec="+std::to_string(ec));
+		Xfs::getInstance()->l.debug_dev("Error, ec="+std::to_string(ec));
 		this->status.fwDevice = WFS_IDC_DEVHWERROR;
 		return;
 	}
@@ -1911,10 +1911,10 @@ void IDCCRT310::updateCardStatus(HANDLE port)
 		default: {break; }
 	}
 	
-	Xfs::getInstance()->l.slog("Card position device status (card position):");
-	Xfs::getInstance()->l.slog("atPosition   = " + std::to_string(atPosition)+" ("+sAtPosition+")");
-	Xfs::getInstance()->l.slog("frontSetting = " + std::to_string(frontSetting) + " (" + sFrontSetting + ")");
-	Xfs::getInstance()->l.slog("rearSetting  = " + std::to_string(rearSetting) + " (" + sRearSetting + ")");
+	Xfs::getInstance()->l.debug_dev("Card position device status (card position):");
+	Xfs::getInstance()->l.debug_dev("atPosition   = " + std::to_string(atPosition)+" ("+sAtPosition+")");
+	Xfs::getInstance()->l.debug_dev("frontSetting = " + std::to_string(frontSetting) + " (" + sFrontSetting + ")");
+	Xfs::getInstance()->l.debug_dev("rearSetting  = " + std::to_string(rearSetting) + " (" + sRearSetting + ")");
 
 
 }

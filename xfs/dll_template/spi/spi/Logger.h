@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 using namespace std;
+
+
 class Logger
 {
 private:
@@ -12,15 +14,23 @@ public:
 	~Logger();
 	
 	//Simple log, just for debug 
-	void slog(std::string header,unsigned char *data, int len);
-	void slog(std::string header, char *data, int len);
+	void debug(std::string header,unsigned char *data, int len);
+	void debug(std::string header, char *data, int len);
+	void debug(const string & s);
 
-	void slog(const string & s);
+	
+	   
 
 	void setName(const string & s);
 	void setTraceLevel(DWORD level);
 	void trace(const string &data, DWORD level);
-		
+
+
+
+	void log(std::string header, unsigned char *data, int len, int level);
+	void log(std::string header, char *data, int len, int level);
+	void log(const string & s, int level);
+
 	
 };
 

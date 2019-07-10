@@ -30,7 +30,7 @@ void Setup(HMODULE hModule)
 
 
 	Xfs::getInstance()->l.setName(Xfs::getInstance()->dllName + ".log");
-	Xfs::getInstance()->l.slog("DLL_PROCESS_ATTACH Executing.");
+	Xfs::getInstance()->l.debug_dev("DLL_PROCESS_ATTACH Executing.");
 
 }
 
@@ -73,7 +73,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     case DLL_PROCESS_DETACH:
 	{	
 
-		Xfs::getInstance()->l.slog("detaching");
+		Xfs::getInstance()->l.debug_dev("detaching");
 		
 		
 		break;

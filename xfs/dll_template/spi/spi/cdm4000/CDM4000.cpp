@@ -17,11 +17,11 @@ void CDM4000::checkStatus()
 
 
 
-	Xfs::getInstance()->l.slog("checkStatus() execution");
+	Xfs::getInstance()->l.debug_dev("checkStatus() execution");
 
 	if (!cdmOpened)
 	{
-		Xfs::getInstance()->l.slog("cdm is not opened");
+		Xfs::getInstance()->l.debug_dev("cdm is not opened");
 		this->status.fwDevice = WFS_CDM_DEVOFFLINE;
 		return;
 	}
@@ -29,13 +29,13 @@ void CDM4000::checkStatus()
 		this->status.fwDevice = WFS_CDM_DEVONLINE;
 	CDMSTATUS s;
 
-	Xfs::getInstance()->l.slog("cdm is not opened");
+	Xfs::getInstance()->l.debug_dev("cdm is not opened");
 
 	if (!MFSCommCDM_Status(&s))
 	{
-		Xfs::getInstance()->l.slog("!MFSCommCDM_Status(&s)");
+		Xfs::getInstance()->l.debug_dev("!MFSCommCDM_Status(&s)");
 	}
-	Xfs::getInstance()->l.slog("s.error_cd=" + std::to_string(s.error_cd) + " s.reject_cd=" + std::to_string(s.reject_cd));
+	Xfs::getInstance()->l.debug_dev("s.error_cd=" + std::to_string(s.error_cd) + " s.reject_cd=" + std::to_string(s.reject_cd));
 	if (s.error_cd == 0x30)
 	{
 		this->status.fwDevice = WFS_CDM_DEVONLINE;
@@ -102,7 +102,7 @@ bool CDM4000::closeCdm()
 
 void CDM4000::copyLpInput(LPVOID lpData, REQUESTID reqId) 
 {
-	Xfs::getInstance()->l.slog("copyLpInput:"+std::to_string(requests[reqId]->messageType)+ ", command="+ std::to_string(requests[reqId]->cmd));
+	Xfs::getInstance()->l.debug_dev("copyLpInput:"+std::to_string(requests[reqId]->messageType)+ ", command="+ std::to_string(requests[reqId]->cmd));
 
 
 	if (requests[reqId]->messageType == MSG_EXECUTE && lpData)
@@ -133,7 +133,7 @@ void CDM4000::copyLpInput(LPVOID lpData, REQUESTID reqId)
 		}
 		if (requests[reqId]->cmd == WFS_CMD_CDM_DISPENSE)
 		{
-			Xfs::getInstance()->l.slog("WFS_CMD_CDM_DISPENSE params parse ENTER");
+			Xfs::getInstance()->l.debug_dev("WFS_CMD_CDM_DISPENSE params parse ENTER");
 			LPWFSCDMDISPENSE lpDispenses = (LPWFSCDMDISPENSE)lpData;
 			memAlloc->AllocateBuffer(sizeof(WFSCDMDISPENSE), (void **)&requests[reqId]->lpParam);
 
@@ -158,7 +158,7 @@ void CDM4000::copyLpInput(LPVOID lpData, REQUESTID reqId)
 				memAlloc->AllocateMore(sizeof(long)*lpDispensed->lpDenomination->usCount, requests[reqId]->lpParam, (void **)&lpDispensed->lpDenomination->lpulValues);
 			for (int i = 0; i < lpDispensed->lpDenomination->usCount; i++)
 				lpDispensed->lpDenomination->lpulValues[i] = lpDispenses->lpDenomination->lpulValues[i];
-			Xfs::getInstance()->l.slog("WFS_CMD_CDM_DISPENSE params parse EXIT");
+			Xfs::getInstance()->l.debug_dev("WFS_CMD_CDM_DISPENSE params parse EXIT");
 
 
 		}
@@ -209,7 +209,7 @@ void CDM4000::copyLpInput(LPVOID lpData, REQUESTID reqId)
 		}
 		if (requests[reqId]->cmd == WFS_CMD_CDM_SET_CASH_UNIT_INFO || requests[reqId]->cmd == WFS_CMD_CDM_END_EXCHANGE)
 		{
-			Xfs::getInstance()->l.slog("WFS_CMD_CDM_END_EXCHANGE="+std::to_string((int)lpData));
+			Xfs::getInstance()->l.debug_dev("WFS_CMD_CDM_END_EXCHANGE="+std::to_string((int)lpData));
 
 			LPWFSCDMCUINFO lpCUInfos = (LPWFSCDMCUINFO)lpData;
 			memAlloc->AllocateBuffer(sizeof(WFSCDMCUINFO), (void **)&requests[reqId]->lpParam);
@@ -412,59 +412,59 @@ void CDM4000::getInfoProc(REQUESTID reqId)
 {
 	if (requests[reqId]->cmd == WFS_INF_CDM_STATUS)
 	{
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_STATUS enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_STATUS enter");
 
 		getWFS_INF_CDM_STATUS(reqId);
 
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_STATUS exit");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_STATUS exit");
 	}
 	else
 	if (requests[reqId]->cmd == WFS_INF_CDM_CAPABILITIES)
 	{
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_CAPABILITIES enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_CAPABILITIES enter");
 
 		getWFS_INF_CDM_CAPABILITIES(reqId);
 
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_CAPABILITIES exit");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_CAPABILITIES exit");
 	}
 	else
 	if (requests[reqId]->cmd == WFS_INF_CDM_CASH_UNIT_INFO)
 	{
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_CASH_UNIT_INFO enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_CASH_UNIT_INFO enter");
 
 		getWFS_INF_CDM_CASH_UNIT_INFO(reqId);
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_CASH_UNIT_INFO exit");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_CASH_UNIT_INFO exit");
 
 	}	
 	else
 	if (requests[reqId]->cmd == WFS_INF_CDM_CURRENCY_EXP)
 	{
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_CURRENCY_EXP enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_CURRENCY_EXP enter");
 		getWFS_INF_CDM_CURRENCY_EXP(reqId);
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_CURRENCY_EXP exit");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_CURRENCY_EXP exit");
 
 	}	
 	else
 	if (requests[reqId]->cmd == WFS_INF_CDM_MIX_TYPES)
 	{
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_MIX_TYPES enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_MIX_TYPES enter");
 
 		getWFS_INF_CDM_MIX_TYPES(reqId);
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_MIX_TYPES exit");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_MIX_TYPES exit");
 
 	}
 	else
 	if (requests[reqId]->cmd == WFS_INF_CDM_MIX_TABLE)
 	{
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_MIX_TABLE enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_MIX_TABLE enter");
 
 		getWFS_INF_CDM_MIX_TABLE(reqId);
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_INF_CDM_MIX_TABLE exit");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_INF_CDM_MIX_TABLE exit");
 
 	}
 	else
 	{
-		Xfs::getInstance()->l.slog("!!!!!WFS_ERR_UNSUPP_CATEGORY!!!!!");
+		Xfs::getInstance()->l.debug_dev("!!!!!WFS_ERR_UNSUPP_CATEGORY!!!!!");
 
 		requests[reqId]->pResult->hResult = WFS_ERR_UNSUPP_CATEGORY;
 	}
@@ -481,16 +481,16 @@ void CDM4000::executeProc(REQUESTID reqId)
 	else
 	if (requests[reqId]->cmd == WFS_CMD_CDM_START_EXCHANGE)
 	{
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_CMD_CDM_START_EXCHANGE enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_CMD_CDM_START_EXCHANGE enter");
 
 		execWFS_CMD_CDM_START_EXCHANGE(reqId);
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_CMD_CDM_START_EXCHANGE exit");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_CMD_CDM_START_EXCHANGE exit");
 
 	}
 	else
 	if (requests[reqId]->cmd == WFS_CMD_CDM_END_EXCHANGE)
 	{	
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_CMD_CDM_END_EXCHANGE enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_CMD_CDM_END_EXCHANGE enter");
 
 		execWFS_CMD_CDM_END_EXCHANGE(reqId);
 	}
@@ -499,7 +499,7 @@ void CDM4000::executeProc(REQUESTID reqId)
 	{
 
 		
-		Xfs::getInstance()->l.slog("requests[reqId]->cmd == WFS_CMD_CDM_DISPENSE enter");
+		Xfs::getInstance()->l.debug_dev("requests[reqId]->cmd == WFS_CMD_CDM_DISPENSE enter");
 
 		execWFS_CMD_CDM_DISPENSE(reqId);
 	}
@@ -696,7 +696,7 @@ void CDM4000::execWFS_CMD_CDM_DENOMINATE(REQUESTID reqId)
 
 void CDM4000::execWFS_CMD_CDM_DISPENSE(REQUESTID reqId) 
 {
-	Xfs::getInstance()->l.slog("execWFS_CMD_CDM_DISPENSE enter");
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_CDM_DISPENSE enter");
 
 
 	checkStatus();
@@ -705,7 +705,7 @@ void CDM4000::execWFS_CMD_CDM_DISPENSE(REQUESTID reqId)
 
 	if (status.fwDevice != WFS_CDM_DEVONLINE)
 	{
-		Xfs::getInstance()->l.slog("status.fwDevice != WFS_CDM_DEVONLINE =="+std::to_string(status.fwDevice));
+		Xfs::getInstance()->l.debug_dev("status.fwDevice != WFS_CDM_DEVONLINE =="+std::to_string(status.fwDevice));
 
 
 		requests[reqId]->pResult->hResult = WFS_ERR_HARDWARE_ERROR;
@@ -713,16 +713,16 @@ void CDM4000::execWFS_CMD_CDM_DISPENSE(REQUESTID reqId)
 	}
 	if (exchangeActive)
 	{
-		Xfs::getInstance()->l.slog("exchangeActive");
+		Xfs::getInstance()->l.debug_dev("exchangeActive");
 
 		requests[reqId]->pResult->hResult = WFS_ERR_CDM_EXCHANGEACTIVE;
 		return;
 	}
-	Xfs::getInstance()->l.slog("LPWFSCDMDISPENSE lpDispense = (LPWFSCDMDISPENSE)requests[reqId]->lpParam; enter");
+	Xfs::getInstance()->l.debug_dev("LPWFSCDMDISPENSE lpDispense = (LPWFSCDMDISPENSE)requests[reqId]->lpParam; enter");
 
 	LPWFSCDMDISPENSE lpDispense = (LPWFSCDMDISPENSE)requests[reqId]->lpParam;	
 
-	Xfs::getInstance()->l.slog("LPWFSCDMDISPENSE lpDispense = (LPWFSCDMDISPENSE)requests[reqId]->lpParam; exit");
+	Xfs::getInstance()->l.debug_dev("LPWFSCDMDISPENSE lpDispense = (LPWFSCDMDISPENSE)requests[reqId]->lpParam; exit");
 	
 	bool tresholdCu0 = false;
 	bool tresholdCu1 = false;
@@ -773,10 +773,10 @@ void CDM4000::execWFS_CMD_CDM_DISPENSE(REQUESTID reqId)
 	CDMMULTIDISPENSE lpResult;	
 	  
 
-	Xfs::getInstance()->l.slog("TO DISPENSE 1:"+std::to_string(cu0));
-	Xfs::getInstance()->l.slog("TO DISPENSE 2:" + std::to_string(cu1));
-	Xfs::getInstance()->l.slog("TO DISPENSE 3:" + std::to_string(cu2));
-	Xfs::getInstance()->l.slog("TO DISPENSE 4:" + std::to_string(cu3));
+	Xfs::getInstance()->l.debug_dev("TO DISPENSE 1:"+std::to_string(cu0));
+	Xfs::getInstance()->l.debug_dev("TO DISPENSE 2:" + std::to_string(cu1));
+	Xfs::getInstance()->l.debug_dev("TO DISPENSE 3:" + std::to_string(cu2));
+	Xfs::getInstance()->l.debug_dev("TO DISPENSE 4:" + std::to_string(cu3));
 	
 	bool res;
 		
@@ -796,12 +796,12 @@ void CDM4000::execWFS_CMD_CDM_DISPENSE(REQUESTID reqId)
 	
 	if (lpResult.error_cd == 0x30)
 	{
-		Xfs::getInstance()->l.slog("Dispensed with no_error");
+		Xfs::getInstance()->l.debug_dev("Dispensed with no_error");
 	}
 	else
 	{
-		Xfs::getInstance()->l.slog("Dispensed with error:" + std::to_string(lpResult.error_cd));
-		Xfs::getInstance()->l.slog("Dispensed with reject:" + std::to_string(lpResult.reject_cd));
+		Xfs::getInstance()->l.debug_dev("Dispensed with error:" + std::to_string(lpResult.error_cd));
+		Xfs::getInstance()->l.debug_dev("Dispensed with reject:" + std::to_string(lpResult.reject_cd));
 	}
 
 
@@ -810,15 +810,15 @@ void CDM4000::execWFS_CMD_CDM_DISPENSE(REQUESTID reqId)
 	cu2 = lpResult.count[2];
 	cu3 = lpResult.count[3];
 	
-	Xfs::getInstance()->l.slog("DISPENSED 1:" + std::to_string(cu0));
-	Xfs::getInstance()->l.slog("DISPENSED 2:" + std::to_string(cu1));
-	Xfs::getInstance()->l.slog("DISPENSED 3:" + std::to_string(cu2));
-	Xfs::getInstance()->l.slog("DISPENSED 4:" + std::to_string(cu3));
+	Xfs::getInstance()->l.debug_dev("DISPENSED 1:" + std::to_string(cu0));
+	Xfs::getInstance()->l.debug_dev("DISPENSED 2:" + std::to_string(cu1));
+	Xfs::getInstance()->l.debug_dev("DISPENSED 3:" + std::to_string(cu2));
+	Xfs::getInstance()->l.debug_dev("DISPENSED 4:" + std::to_string(cu3));
 
 
 
 
-	Xfs::getInstance()->l.slog("REQUEST=" + std::to_string(reqId) + "PRESULT="+std::to_string((long)requests[reqId]->pResult));
+	Xfs::getInstance()->l.debug_dev("REQUEST=" + std::to_string(reqId) + "PRESULT="+std::to_string((long)requests[reqId]->pResult));
 
 	memAlloc->AllocateMore(sizeof(WFSCDMDENOMINATION), requests[reqId]->pResult, (void**)&requests[reqId]->pResult->lpBuffer);
 	LPWFSCDMDENOMINATION lpDenomination = (LPWFSCDMDENOMINATION)requests[reqId]->pResult->lpBuffer;
@@ -1146,11 +1146,11 @@ void CDM4000::execWFS_CMD_CDM_SET_MIX_TABLE(REQUESTID reqId)
 }
 void CDM4000::execWFS_CMD_CDM_RESET(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.slog("execWFS_CMD_CDM_RESET");
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_CDM_RESET");
 
 	bool b = MFSCommCDM_Reset();
 
-	Xfs::getInstance()->l.slog("execWFS_CMD_CDM_RESET="+std::to_string(b));
+	Xfs::getInstance()->l.debug_dev("execWFS_CMD_CDM_RESET="+std::to_string(b));
 
 }
 void CDM4000::execWFS_CMD_CDM_TEST_CASH_UNITS(REQUESTID reqId){}
@@ -1430,7 +1430,7 @@ void CDM4000::getStoredData()
 	auto sunitid = split(unitid);
 	if (checkCount != sunitid.size())
 	{
-		Xfs::getInstance()->l.slog("unitid parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitid parameter configuration error");
 		throw "getStoredData";			
 	}
 		
@@ -1438,7 +1438,7 @@ void CDM4000::getStoredData()
 	auto sunitnames = split(unitnames);
 	if (checkCount != sunitnames.size())
 	{
-		Xfs::getInstance()->l.slog("unitnames parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitnames parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1446,7 +1446,7 @@ void CDM4000::getStoredData()
 	auto sunitpositions = split(unitpositions);
 	if (checkCount != sunitpositions.size())
 	{
-		Xfs::getInstance()->l.slog("unitpositions parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitpositions parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1456,7 +1456,7 @@ void CDM4000::getStoredData()
 	auto sunitvalues = split(unitvalues);
 	if (checkCount != sunitvalues.size())
 	{
-		Xfs::getInstance()->l.slog("unitvalues parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitvalues parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1466,7 +1466,7 @@ void CDM4000::getStoredData()
 	auto sunitinitialcount = split(unitinitialcount);
 	if (checkCount != sunitinitialcount.size())
 	{
-		Xfs::getInstance()->l.slog("unitinitialcount parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitinitialcount parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1474,7 +1474,7 @@ void CDM4000::getStoredData()
 	auto sunitcount = split(unitcount);
 	if (checkCount != sunitcount.size())
 	{
-		Xfs::getInstance()->l.slog("unitcount parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitcount parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1483,7 +1483,7 @@ void CDM4000::getStoredData()
 	auto sunitrejected = split(unitrejected);
 	if (checkCount != sunitrejected.size())
 	{
-		Xfs::getInstance()->l.slog("unitrejected parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitrejected parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1492,7 +1492,7 @@ void CDM4000::getStoredData()
 	auto sunitminimum = split(unitminimum);
 	if (checkCount != sunitminimum.size())
 	{
-		Xfs::getInstance()->l.slog("unitminimum parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitminimum parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1501,7 +1501,7 @@ void CDM4000::getStoredData()
 	auto sunitmaximum = split(unitmaximum);
 	if (checkCount != sunitmaximum.size())
 	{
-		Xfs::getInstance()->l.slog("unitmaximum parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitmaximum parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1509,7 +1509,7 @@ void CDM4000::getStoredData()
 	auto sunitdispensed = split(unitdispensed);
 	if (checkCount != sunitdispensed.size())
 	{
-		Xfs::getInstance()->l.slog("unitdispensed parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitdispensed parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1518,7 +1518,7 @@ void CDM4000::getStoredData()
 	auto sunitpresented = split(unitpresented);
 	if (checkCount != sunitpresented.size())
 	{
-		Xfs::getInstance()->l.slog("unitpresented parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitpresented parameter configuration error");
 		throw "getStoredData";
 	}
 
@@ -1528,7 +1528,7 @@ void CDM4000::getStoredData()
 	
 	if (checkCount != sunitretracted.size())
 	{
-		Xfs::getInstance()->l.slog("unitretracted parameter configuration error");
+		Xfs::getInstance()->l.debug_dev("unitretracted parameter configuration error");
 		throw "getStoredData";
 	}
 	cuNames.clear();
@@ -1548,7 +1548,7 @@ void CDM4000::getStoredData()
 		if (sunitid[i].size() != 5)
 		{
 
-			Xfs::getInstance()->l.slog("unit id parameter configuration error (length)");
+			Xfs::getInstance()->l.debug_dev("unit id parameter configuration error (length)");
 			throw "getStoredData";
 		}
 		
@@ -1705,10 +1705,10 @@ CDM4000::CDM4000(volatile SharedData* s, unsigned short version, std::string por
 	bool res = openCdm();
 	if (res)
 	{
-		Xfs::getInstance()->l.slog("CDM OPENED");
+		Xfs::getInstance()->l.debug_dev("CDM OPENED");
 	}
 	else
-		Xfs::getInstance()->l.slog("CDM OPEN FAILED");
+		Xfs::getInstance()->l.debug_dev("CDM OPEN FAILED");
 
 	
 	

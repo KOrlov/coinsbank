@@ -19,20 +19,38 @@ Logger::~Logger()
 	DeleteCriticalSection (&m_cs);
 }
 
-void Logger::slog(std::string header,unsigned char *data, int len)
+void Logger::debug(std::string header,unsigned char *data, int len)
+{
+	log(header, data, len, 4);
+}
+void Logger::debug(std::string header,  char *data, int len)
+{
+	log(header, data, len, 4);
+}
+void Logger::debug(const string & s)
+{	
+	log(s,4);
+}
+
+
+
+
+
+
+void Logger::log(std::string header, unsigned char *data, int len, int level = 0)
 {
 	std::vector<unsigned char> v;
 	for (int i = 0; i < len; i++)
 	{
 		v.push_back(data[i]);
-	}	
+	}
 	std::string res;
 	boost::algorithm::hex(v.begin(), v.end(), back_inserter(res));
 
-	std::string pr = header+"("+std::to_string(len)+"):" + res;
-	slog(pr);
+	std::string pr = header + "(" + std::to_string(len) + "):" + res;
+	log(pr,level);
 }
-void Logger::slog(std::string header,  char *data, int len)
+void Logger::log(std::string header, char *data, int len, int level = 0)
 {
 	std::vector<char> v;
 	for (int i = 0; i < len; i++)
@@ -43,15 +61,14 @@ void Logger::slog(std::string header,  char *data, int len)
 	boost::algorithm::hex(v.begin(), v.end(), back_inserter(res));
 
 	std::string pr = header + "(" + std::to_string(len) + "):" + res;
-	slog(pr);
+	log(pr,level);
 }
-	
-void Logger::slog(const string & s)
-{	
+void Logger::log(const string & s, int level=0)
+{
 	//LOCK COMMENTED
 	//
 	AutoLock lock(&m_cs);
-	
+
 	try {
 		//MUTEX ADDED
 		//if (WaitForSingleObject(Xfs::getInstance()->hMutex, INFINITE) != WAIT_OBJECT_0)return;
@@ -66,20 +83,23 @@ void Logger::slog(const string & s)
 		string newname(name + ft);
 		file.open(newname, fstream::app);
 
-		
+
 		std::string sTime = boost::posix_time::to_iso_string(boost::posix_time::microsec_clock::local_time());
 
 		//file << "\n" << asctime(curtime) << ":" << s << "\n";
-		file << "\n" << sTime.substr(9)+ " :" + s << "\n";
+		file << "\n" << sTime.substr(9) + " :" + s << "\n";
 		file.close();
 	}
-	catch(...)
+	catch (...)
 	{
-	}	
+	}
 	//MUTEX ADDED
 	//ReleaseMutex(Xfs::getInstance()->hMutex);
-	
+
 }
+
+
+
 
 void Logger::setName(const string & s)
 {
