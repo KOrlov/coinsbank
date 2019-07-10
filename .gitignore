@@ -1,5 +1,6 @@
 /*
 !/xfs/dll_template/spi/
+/xfs/dll_template/spi/Test/*
 # Prerequisites
 *.d
 
