@@ -159,7 +159,7 @@ void Xfs::printDebugData()
 	int i = 0;
 	while (ev)
 	{
-		l.debug_dev("Record:" + std::to_string(i) + "hservice:" + ::to_string(ev->hService));
+		l.debug("Record:" + std::to_string(i) + "hservice:" + ::to_string(ev->hService));
 
 		ev = ev->next;
 	}

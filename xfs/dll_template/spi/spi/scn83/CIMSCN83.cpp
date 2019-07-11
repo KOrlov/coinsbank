@@ -10,15 +10,15 @@ bool CIMSCN83::canAccept()
 {	
 	if (this->exchangeActive)return false;
 
-	Xfs::getInstance()->l.debug_dev("cashInStatus");
+	Xfs::getInstance()->l.debug("cashInStatus");
 	if (this->cashInStatus.wStatus != WFS_CIM_CIOK)return false;
-	Xfs::getInstance()->l.debug_dev("fwDevice");
+	Xfs::getInstance()->l.debug("fwDevice");
 	if (this->status.fwDevice != WFS_CIM_DEVONLINE)return false;
-	Xfs::getInstance()->l.debug_dev("acceptorState");
+	Xfs::getInstance()->l.debug("acceptorState");
 	if (this->status.fwAcceptor != AcceptorState::stateOk)return false;
-	Xfs::getInstance()->l.debug_dev("intermediate stacker");
+	Xfs::getInstance()->l.debug("intermediate stacker");
 	if (this->status.fwIntermediateStacker != WFS_CIM_ISEMPTY)return false;
-	Xfs::getInstance()->l.debug_dev("stacker items");
+	Xfs::getInstance()->l.debug("stacker items");
 	if (this->status.fwStackerItems != WFS_CIM_NOITEMS)return false;
 	if (this->status.fwBanknoteReader != WFS_CIM_BNROK)return false;
 
@@ -35,27 +35,27 @@ void CIMSCN83::initCashInStatus()
 
 AcceptorState CIMSCN83::getAcceptorState()
 {
-	Xfs::getInstance()->l.debug_dev("getAcceptorState");
+	Xfs::getInstance()->l.debug("getAcceptorState");
 
 	if (this->status.fwDevice != WFS_CIM_DEVONLINE)return AcceptorState::stateUnknown;
 
 	if (this->totalCount() >= this->cashin[0].ulMaximum)
 	{		
-		Xfs::getInstance()->l.debug_dev("totalCount()");
+		Xfs::getInstance()->l.debug("totalCount()");
 
 		return AcceptorState::stateStop;
 	}
 	if (this->mpost->cheated)
 	{		
-		Xfs::getInstance()->l.debug_dev("cheated");
+		Xfs::getInstance()->l.debug("cheated");
 		return AcceptorState::stateStop;
 	}
 	if (!this->mpost->cassetteAttached)
 	{		
-		Xfs::getInstance()->l.debug_dev("cassete not attached");
+		Xfs::getInstance()->l.debug("cassete not attached");
 		return AcceptorState::stateStop;
 	}
-	Xfs::getInstance()->l.debug_dev("getAcceptorState ok");
+	Xfs::getInstance()->l.debug("getAcceptorState ok");
 
 	return AcceptorState::stateOk;
 }
@@ -621,7 +621,7 @@ void CIMSCN83::sendWFS_EXEE_CIM_INFO_AVAILABLE(HSERVICE hService, LPWFSCIMITEMIN
 void CIMSCN83::sendWFS_EXEE_CIM_INSERTITEMS(HSERVICE hService) 
 {
 
-	Xfs::getInstance()->l.debug_dev("sendWFS_EXEE_CIM_INSERTITEMS  EXECUTING");
+	Xfs::getInstance()->l.debug("sendWFS_EXEE_CIM_INSERTITEMS  EXECUTING");
 	map<HWND, EventReg> events = getEventMap(hService, WFS_EXECUTE_EVENT);
 	for (auto i : events)
 	{
@@ -961,7 +961,7 @@ void CIMSCN83::getWFS_INF_CIM_GET_BLACKLIST(REQUESTID reqId){}
 
 void CIMSCN83::execWFS_CMD_CIM_CASH_IN_START(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.debug_dev("Executing start cash in");
+	Xfs::getInstance()->l.debug("Executing start cash in");
 	
 	if (!this->canAccept())
 	{
@@ -978,12 +978,12 @@ void CIMSCN83::execWFS_CMD_CIM_CASH_IN_START(REQUESTID reqId)
 	notein = 0;
 	this->cashInStatus.usNumOfRefused = 0;
 	this->cashInStatus.wStatus = WFS_CIM_CIACTIVE;
-	Xfs::getInstance()->l.debug_dev("Starting cash in");	
+	Xfs::getInstance()->l.debug("Starting cash in");	
 
 }
 void CIMSCN83::execWFS_CMD_CIM_CASH_IN(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.debug_dev("execWFS_CMD_CIM_CASH_IN");
+	Xfs::getInstance()->l.debug("execWFS_CMD_CIM_CASH_IN");
 
 	if (this->exchangeActive)
 	{
@@ -1041,10 +1041,10 @@ void CIMSCN83::execWFS_CMD_CIM_CASH_IN(REQUESTID reqId)
 		short nid = 0;
 		int  val = mpost->bankNoteInEscrow.noteType.base * pow(10, mpost->bankNoteInEscrow.noteType.exp);
 
-		Xfs::getInstance()->l.debug_dev("mpost->bankNoteInEscrow.noteType.base=" + std::to_string(mpost->bankNoteInEscrow.noteType.base));
-		Xfs::getInstance()->l.debug_dev("mpost->bankNoteInEscrow.noteType.exp=" + std::to_string(mpost->bankNoteInEscrow.noteType.exp));
-		Xfs::getInstance()->l.debug_dev("val=" + std::to_string(val));
-		Xfs::getInstance()->l.debug_dev("notetypes count=" + std::to_string(noteTypes.size()));
+		Xfs::getInstance()->l.debug("mpost->bankNoteInEscrow.noteType.base=" + std::to_string(mpost->bankNoteInEscrow.noteType.base));
+		Xfs::getInstance()->l.debug("mpost->bankNoteInEscrow.noteType.exp=" + std::to_string(mpost->bankNoteInEscrow.noteType.exp));
+		Xfs::getInstance()->l.debug("val=" + std::to_string(val));
+		Xfs::getInstance()->l.debug("notetypes count=" + std::to_string(noteTypes.size()));
 
 		for (auto t : noteTypes)
 		{
@@ -1111,7 +1111,7 @@ void CIMSCN83::execWFS_CMD_CIM_CASH_IN_END(REQUESTID reqId)
 	this->status.fwStackerItems = WFS_CIM_NOITEMS;
 
 	auto a = this->memAlloc->AllocateMore(sizeof(WFSCIMCASHINFO), requests[reqId]->pResult, (void **)&requests[reqId]->pResult->lpBuffer);
-	Xfs::getInstance()->l.debug_dev("constructLPWFSCIMCASHIN");
+	Xfs::getInstance()->l.debug("constructLPWFSCIMCASHIN");
 
 	LPWFSCIMCASHINFO lpcii = (LPWFSCIMCASHINFO)requests[reqId]->pResult->lpBuffer;
 	lpcii->usCount = 1;
@@ -1162,7 +1162,7 @@ void CIMSCN83::execWFS_CMD_CIM_SET_TELLER_INFO(REQUESTID reqId){}
 void CIMSCN83::execWFS_CMD_CIM_SET_CASH_UNIT_INFO(REQUESTID reqId)
 {
 	
-	Xfs::getInstance()->l.debug_dev("execWFS_CMD_CIM_SET_CASH_UNIT_INFO");
+	Xfs::getInstance()->l.debug("execWFS_CMD_CIM_SET_CASH_UNIT_INFO");
 	LPWFSCIMCASHINFO cui = (LPWFSCIMCASHINFO)this->requests[reqId]->lpParam;
 	
 	
@@ -1290,7 +1290,7 @@ void CIMSCN83::execWFS_CMD_CIM_RESET(REQUESTID reqId)
 void CIMSCN83::execWFS_CMD_CIM_CONFIGURE_CASH_IN_UNITS(REQUESTID reqId){}
 void CIMSCN83::execWFS_CMD_CIM_CONFIGURE_NOTETYPES(REQUESTID reqId)
 {
-	Xfs::getInstance()->l.debug_dev("WFS_CMD_CIM_CONFIGURE_NOTETYPES");
+	Xfs::getInstance()->l.debug("WFS_CMD_CIM_CONFIGURE_NOTETYPES");
 
 
 	LPUSHORT lpusNoteIDs = (LPUSHORT)this->requests[reqId]->lpParam;
@@ -1476,7 +1476,7 @@ void CIMSCN83::copyLpInput(LPVOID lpData, REQUESTID reqId)
 		}
 		if (requests[reqId]->cmd == WFS_CMD_CIM_SET_CASH_UNIT_INFO || requests[reqId]->cmd == WFS_CMD_CIM_END_EXCHANGE)
 		{
-			Xfs::getInstance()->l.debug_dev("WFS_CMD_CIM_SET_CASH_UNIT_INFO copy data");
+			Xfs::getInstance()->l.debug("WFS_CMD_CIM_SET_CASH_UNIT_INFO copy data");
 			LPWFSCIMCASHINFO lpCUInfos = (LPWFSCIMCASHINFO)lpData;
 			memAlloc->AllocateBuffer(sizeof(WFSCIMCASHINFO), (void **)&requests[reqId]->lpParam);
 
@@ -1675,7 +1675,7 @@ void CIMSCN83::copyLpInput(LPVOID lpData, REQUESTID reqId)
 				c++;
 			}
 			lpusNoteIDss = (LPUSHORT)lpData;
-			Xfs::getInstance()->l.debug_dev("NUM OF NOTES="+std::to_string(c));
+			Xfs::getInstance()->l.debug("NUM OF NOTES="+std::to_string(c));
 			memAlloc->AllocateBuffer(sizeof(USHORT)*(c + 1), (void **)&requests[reqId]->lpParam);
 
 			LPUSHORT lpusNoteIDsd = (LPUSHORT)requests[reqId]->lpParam;
@@ -1965,7 +1965,7 @@ CIMSCN83::CIMSCN83(volatile SharedData* s, unsigned short version, std::string p
 	this->baudRate = baudRate;
 	this->configName = lname;
 	
-	Xfs::getInstance()->l.debug_dev("CIMSCN83::CIMSCN83 executing, port="+this->port);
+	Xfs::getInstance()->l.debug("CIMSCN83::CIMSCN83 executing, port="+this->port);
 
 	mpost = new MpostLite(this->port);	
 	mpost->changed.connect(boost::bind((&CIMSCN83::changed), this));
@@ -2007,7 +2007,7 @@ void CIMSCN83::getStoredData()
 	
 	for (auto i : this->notesConfigured)
 	{
-		Xfs::getInstance()->l.debug_dev("note configured:"+std::to_string(i));
+		Xfs::getInstance()->l.debug("note configured:"+std::to_string(i));
 	}
 
 }

@@ -111,6 +111,3 @@ void Logger::setTraceLevel(DWORD level)
 	m_traceLevel = level;
 }
 
-void Logger::trace(const string &data,DWORD level)
-{
-}

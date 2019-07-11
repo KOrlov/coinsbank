@@ -23,7 +23,6 @@ public:
 
 	void setName(const string & s);
 	void setTraceLevel(DWORD level);
-	void trace(const string &data, DWORD level);
 
 
 

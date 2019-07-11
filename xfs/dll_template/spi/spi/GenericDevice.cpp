@@ -32,7 +32,7 @@ void GenericDevice::sendMessage(HWND hwnd, DWORD dwEventMsg, LPARAM pResult)
 	}
 	
 
-	Xfs::getInstance()->l.debug_dev(
+	Xfs::getInstance()->l.debug(
 		", dwEventMsg=" + std::to_string(dwEventMsg) +
 		", hService=" + std::to_string(((LPWFSRESULT)pResult)->hService) +
 		", hResult=" + std::to_string(((LPWFSRESULT)pResult)->hResult) +
@@ -182,7 +182,7 @@ void GenericDevice::sendRequestCompletion(REQUESTID reqId)
 
 void GenericDevice::requestCompleteHandler(REQUESTID reqId)
 {	
-	Xfs::getInstance()->l.debug_dev("requestCompleteHandler, reqId=" + std::to_string(reqId));
+	Xfs::getInstance()->l.debug("requestCompleteHandler, reqId=" + std::to_string(reqId));
 
 	this->requests[reqId]->isCompleted = 1;
 	requests[reqId]->pResult->hService = requests[reqId]->hservice;
@@ -195,7 +195,7 @@ void GenericDevice::requestCompleteHandler(REQUESTID reqId)
 
 	if (this->requests[reqId]->lpParam)
 	{
-		Xfs::getInstance()->l.debug_dev("requestCompleteHandler free lpParam, reqId=" + std::to_string(reqId));
+		Xfs::getInstance()->l.debug("requestCompleteHandler free lpParam, reqId=" + std::to_string(reqId));
 
 		memAlloc->FreeBuffer(this->requests[reqId]->lpParam);
 	}
@@ -236,7 +236,7 @@ HRESULT GenericDevice::execute(HSERVICE hService, DWORD dwCommand, LPVOID lpCmdD
 	
 	AutoLock lock(&csRequests);
 
-	Xfs::getInstance()->l.debug_dev("GenericDevice::execute command=" + std::to_string(dwCommand)+ "lpCmdData="+std::to_string((long)lpCmdData));
+	Xfs::getInstance()->l.debug("GenericDevice::execute command=" + std::to_string(dwCommand)+ "lpCmdData="+std::to_string((long)lpCmdData));
 	requests[ReqID] = std::make_unique<XfsRequest>(ReqID, dwTimeOut, hWnd, hService);
 	requests[ReqID]->cmd = dwCommand;
 	//requests[ReqID]->lpParam = lpCmdData;
@@ -262,7 +262,7 @@ HRESULT GenericDevice::getInfo(HSERVICE hService, DWORD dwCategory, LPVOID lpQue
 	//requests[ReqID]->lpParam = lpQueryDetails;
 	requests[ReqID]->reqId = ReqID;
 
-	Xfs::getInstance()->l.debug_dev("getInfo, reqId=" + std::to_string(requests[ReqID]->reqId) + ", category=" + std::to_string(dwCategory));
+	Xfs::getInstance()->l.debug("getInfo, reqId=" + std::to_string(requests[ReqID]->reqId) + ", category=" + std::to_string(dwCategory));
 
 	copyLpInput(lpQueryDetails, ReqID);
 
@@ -368,7 +368,7 @@ void GenericDevice::requestProc(REQUESTID ReqID) {
 	this->requests[ReqID]->onTimeouted.disconnect_all_slots();
 	auto memCheck = memAlloc->AllocateBuffer(sizeof(WFSRESULT), (void **)&requests[ReqID]->pResult);	
 	
-	Xfs::getInstance()->l.debug_dev("REQUEST="+std::to_string(ReqID)+"PRESULT=" + std::to_string((long)requests[ReqID]->pResult));
+	Xfs::getInstance()->l.debug("REQUEST="+std::to_string(ReqID)+"PRESULT=" + std::to_string((long)requests[ReqID]->pResult));
 
 
 	memset(requests[ReqID]->pResult, 0, sizeof(WFSRESULT));
@@ -398,28 +398,28 @@ void GenericDevice::requestProc(REQUESTID ReqID) {
 		requests[ReqID]->pResult->hResult = 0;
 		if (requests[ReqID]->messageType == MSG_LOCK)
 		{
-			Xfs::getInstance()->l.debug_dev("Request processing: LOCK");
+			Xfs::getInstance()->l.debug("Request processing: LOCK");
 			requests[ReqID]->completionEvent = WFS_LOCK_COMPLETE;
 			lockProc(ReqID);
 		}
 		else
 		if (requests[ReqID]->messageType == MSG_UNLOCK)
 		{
-			Xfs::getInstance()->l.debug_dev("Request processing: UNLOCK");
+			Xfs::getInstance()->l.debug("Request processing: UNLOCK");
 			requests[ReqID]->completionEvent = WFS_UNLOCK_COMPLETE;
 			unlockProc(ReqID);
 		}
 		else
 		if (requests[ReqID]->messageType == MSG_EXECUTE)
 		{
-			Xfs::getInstance()->l.debug_dev("Request processing: EXECUTE");
+			Xfs::getInstance()->l.debug("Request processing: EXECUTE");
 			requests[ReqID]->completionEvent = WFS_EXECUTE_COMPLETE;
 			executeProc(ReqID);
 		}
 		else
 		if (requests[ReqID]->messageType == MSG_GETINFO)
 		{
-			Xfs::getInstance()->l.debug_dev("Request processing: GETINFO");
+			Xfs::getInstance()->l.debug("Request processing: GETINFO");
 			requests[ReqID]->completionEvent = WFS_GETINFO_COMPLETE;
 			requests[ReqID]->pResult->u.dwCommandCode = requests[ReqID]->cmd;
 			getInfoProc(ReqID);
@@ -427,7 +427,7 @@ void GenericDevice::requestProc(REQUESTID ReqID) {
 		else
 		if (requests[ReqID]->messageType == MSG_CLOSE)
 		{
-			Xfs::getInstance()->l.debug_dev("Request processing: CLOSE");
+			Xfs::getInstance()->l.debug("Request processing: CLOSE");
 			requests[ReqID]->completionEvent = WFS_CLOSE_COMPLETE;
 			
 			requests[ReqID]->pResult->u.dwCommandCode;
@@ -560,7 +560,7 @@ void GenericDevice::registerEvents(unsigned short hservice, HWND handle, DWORD e
 {	
 	AutoMutex m(Xfs::getInstance()->hMutex);
 
-	Xfs::getInstance()->l.debug_dev("Request processing: REGISTER EVENTS");
+	Xfs::getInstance()->l.debug("Request processing: REGISTER EVENTS");
 	
 	if (!sharedData->eventRecord)
 	{
@@ -629,7 +629,7 @@ void GenericDevice::deregisterEvents(unsigned short hservice, HWND handle, DWORD
 	
 	AutoMutex m(Xfs::getInstance()->hMutex);
 
-	Xfs::getInstance()->l.debug_dev("Request processing: DEREGISTER EVENTS");
+	Xfs::getInstance()->l.debug("Request processing: DEREGISTER EVENTS");
 
 
 	if (!sharedData->eventRecord)return;
@@ -730,7 +730,7 @@ GenericDevice::GenericDevice(volatile SharedData* s, unsigned short version)
 	this->sharedData = s;
 	this->version = version;
 
-	Xfs::getInstance()->l.debug_dev("MY SHARED COUNTERP:" + std::to_string(this->sharedData->count));
+	Xfs::getInstance()->l.debug("MY SHARED COUNTERP:" + std::to_string(this->sharedData->count));
 
 	memAlloc = m_memoryManager.GetAllocator(MEMALLOC_SHM);
 

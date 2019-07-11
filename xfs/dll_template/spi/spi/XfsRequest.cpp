@@ -18,7 +18,7 @@ XfsRequest::XfsRequest(REQUESTID r, DWORD t, HWND hWnd, HSERVICE hservice):timeo
 
 XfsRequest::~XfsRequest()
 {
-	Xfs::getInstance()->l.debug_dev("Destructor for request="+std::to_string(reqId));
+	Xfs::getInstance()->l.debug("Destructor for request="+std::to_string(reqId));
 	return;
 	try {
 		if (timeoutThread)
