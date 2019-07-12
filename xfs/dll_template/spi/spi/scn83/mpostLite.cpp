@@ -15,6 +15,15 @@ MpostLite::MpostLite(std::string sport)
 	this->port->set_option(asio::serial_port_base::baud_rate(9600));	
 	this->port->set_option(asio::serial_port_base::character_size(7));
 	
+	//
+
+
+	this->port->set_option(asio::serial_port::parity(asio::serial_port::parity::even));
+	this->port->set_option(asio::serial_port::stop_bits(asio::serial_port::stop_bits::one));
+	this->port->set_option(asio::serial_port::flow_control(asio::serial_port::flow_control::none));
+
+
+
 	startPoll();
 	this->bankNoteInEscrow.isPresent = false;
 	   
@@ -70,7 +79,7 @@ std::vector<char> MpostLite::sendCommand(std::vector<char> &payloadIn)
 	Xfs::getInstance()->l.debug("Sending command:", cmd.data(), cmd.size());
 
 	int  sr = this->port->write_some(boost::asio::buffer(cmd, cmd.size()));
-
+	
 	Xfs::getInstance()->l.debug("Sent bytes:"+std::to_string(sr));
 
 	char resp[255];
@@ -528,17 +537,19 @@ void MpostLite::poll()
 {
 
 	std::vector<char>c = { CmdOmnibus, cmd1.load(), cmd2.load(), cmd3.load()};
+
+	Xfs::getInstance()->l.debug("Sending poll command:", c.data(), c.size());
+
+
+
 	auto r = sendCommand(c);
 
-	
+	Xfs::getInstance()->l.debug("poll data______:", r.data(), r.size());
 
 
 	auto b = setPollResults(r.data());
-	//if (b)
-	{
-		Xfs::getInstance()->l.debug("Sending poll command:",c.data(),c.size());
-		Xfs::getInstance()->l.debug("poll data______:", r.data(), r.size());
-	}
+
+
 	return;
 }
 
